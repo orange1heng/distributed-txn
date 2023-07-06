@@ -110,14 +110,14 @@ lab1P0:
 
 ###
 # The lab2 related tests.
-lab1P1:
+lab2P1:
 	$(GOTEST) ./kv/transaction/commands -run Lab2P1
 
-lab1P2:
+lab2P2:
 	$(GOTEST) ./kv/transaction/commands -run Lab2P2
 
-lab1P3:
+lab2P3:
 	$(GOTEST) ./kv/transaction/commands -run Lab2P3
 
-lab1P4:
+lab2P4:
 	$(GOTEST) ./kv/transaction/... -run 4
