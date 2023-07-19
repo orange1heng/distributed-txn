@@ -374,9 +374,8 @@ func (c *twoPhaseCommitter) buildPrewriteRequest(batch batchKeys) *tikvrpc.Reque
 	// YOUR CODE HERE (lab2).
 	mutations := make([]*pb.Mutation, len(batch.keys))
 	for i, k := range batch.keys {
-		if tmp, ok := c.mutations[string(k)]; ok {
-			mutations[i] = &tmp.Mutation
-		}
+		tmp := c.mutations[string(k)]
+		mutations[i] = &tmp.Mutation
 	}
 
 	req := &pb.PrewriteRequest{
@@ -468,7 +467,6 @@ func (actionPrewrite) handleSingleBatch(c *twoPhaseCommitter, bo *Backoffer, bat
 		// TiKV will return key errors. The statuses of these transactions are unclear.
 		// ResolveLocks will check the transactions' statuses by locks and resolve them.
 		// Set callerStartTS to 0 so as not to update minCommitTS.
-		// 大于 0 说明当前事务需要等待，有其他事务还没处理完且其他事务还未超时
 		msBeforeExpired, _, err := c.store.lockResolver.ResolveLocks(bo, 0, locks)
 		if err != nil {
 			return errors.Trace(err)
@@ -565,11 +563,11 @@ func (actionCommit) handleSingleBatch(c *twoPhaseCommitter, bo *Backoffer, batch
 			zap.Uint64("txnStartTS", c.startTS))
 		return err
 	}
-	if _, ok := failpoint.Eval(_curpkg_("mockFailAfterPK")); ok {
+	failpoint.Inject("mockFailAfterPK", func() {
 		if !isPrimary {
 			err = errors.New("commit secondary keys error")
 		}
-	}
+	})
 	// handle the response and error refer to actionPrewrite.handleSingleBatch
 	// YOUR CODE HERE (lab2).
 
